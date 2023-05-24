@@ -1,8 +1,8 @@
 const Config = require("../config.js");
 const Path = require("path");
 const fs = require("fs");
-const { encyptData,
-    decyptData,
+const { encryptBuffer,
+    decryptBuffer,
     printInfo } = require("./encypt_data.js");
 
 /**
@@ -46,9 +46,9 @@ function loadFileNameByPath4Ext(dirPath, exts) {
  * 创建目录
  * @param {*} filePath 文件绝对路径
  */
-function createFolder(relativePath) {
+function createFolder(rootPath, relativePath) {
     //拼接输出目录
-    let outPath = Path.join(Config.outPath, relativePath);
+    let outPath = Path.join(rootPath, relativePath);
     let outFolder = Path.dirname(outPath);
     fs.mkdirSync(outFolder, { recursive: true });
 }
@@ -56,32 +56,35 @@ function createFolder(relativePath) {
 /**
  * 程序入口, 开始加密
  */
-function startEncypt() {
+function startEncrypt() {
+    printInfo();
     console.log("---------------------加密开始---------------------");
-
+    console.time("加密耗时: ");
     let arrFiles = loadFileNameByPath4Ext(Config.imgPath, [Config.suffix]);
 
     for (let i = 0; i < arrFiles.length; i++) {
         let relativePath = Path.relative(Config.imgPath, arrFiles[i]);
         //创建输出目录
-        createFolder(relativePath);
+        createFolder(Config.outPath, relativePath);
         //加密图片
-        encyptImg(relativePath);
+        encryptImg(relativePath);
     }
-
+    console.timeEnd("加密耗时: ");
     console.log("---------------------加密结束---------------------");
 }
 
 /**
  * 解密
  */
-function startDecypt() {
+function startDecrypt() {
     let arrFiles = loadFileNameByPath4Ext(Config.outPath, [Config.suffix]);
 
     for (let i = 0; i < arrFiles.length; i++) {
         let relativePath = Path.relative(Config.outPath, arrFiles[i]);
-        //加密图片
-        decyptImg(relativePath);
+        //创建输出目录
+        createFolder(Config.decPath, relativePath);
+        //解密图片
+        decryptImg(relativePath);
     }
 }
 
@@ -90,27 +93,15 @@ function startDecypt() {
  * @param {*} imgName 图片名
  * @param {*} callback 
  */
-function encyptImg(imgName) {
+function encryptImg(imgName) {
     let imgPath = Path.join(Config.imgPath, imgName);
     let outPath = Path.join(Config.outPath, imgName);
 
     console.log(`开始加密 ${imgPath}`);
 
-    // let data = fs.readFileSync(imgPath, 'binary');
-
-    // console.log(": " + data.length + " characters, " +
-    //     Buffer.byteLength(data, 'utf8') + " bytes");
-
-    let data = fs.readFileSync(imgPath);
-
-    console.log(": " + data.length + " characters, " +
-        Buffer.byteLength(data, 'utf8') + " bytes");
-
-    return;
-    let encryptData = encyptData(data);
-    let dataBuffer = Buffer.from(encryptData, 'base64');
-
-    fs.writeFileSync(outPath, dataBuffer, { encoding: "binary", flag: 'w+' });
+    let dataBuffer = fs.readFileSync(imgPath);
+    let encBuffer = encryptBuffer(dataBuffer);
+    fs.writeFileSync(outPath, encBuffer);
 
     console.log(`加密成功 ${outPath}`);
 }
@@ -120,30 +111,23 @@ function encyptImg(imgName) {
  * @param {*} imgPath 
  * @param {*} callback 
  */
-function decyptImg(imgName) {
+function decryptImg(imgName) {
 
     let imgPath = Path.join(Config.outPath, imgName);
     let decPath = Path.join(Config.decPath, imgName);
 
     console.log(`开始解密 ${imgPath}`);
 
-    // let data = fs.readFileSync(imgPath, 'binary');
-    let data = fs.readFileSync(imgPath, 'ascii');
-    console.log(": " + data.length + " characters, " +
-        Buffer.byteLength(data, 'utf8') + " bytes");
-
-    const buffer = Buffer.from(data, 'ascii');
-    const base64Data = buffer.toString('base64');
-    let result = decyptData(base64Data);
-
-    fs.writeFileSync(decPath, result, "binary");
+    let dataBuffer = fs.readFileSync(imgPath);
+    let decBuffer = decryptBuffer(dataBuffer);
+    fs.writeFileSync(decPath, decBuffer);
 
     console.log(`解密成功 ${decPath}`);
 }
 
 module.exports = {
-    startDecypt,
-    startEncypt,
-    encyptImg,
-    decyptImg
+    startDecrypt,
+    startEncrypt,
+    encryptImg,
+    decryptImg
 }

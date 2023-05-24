@@ -1,5 +1,5 @@
 
-const { startEncypt, startDecypt } = require("./src/encypt_img");
+const { startEncrypt, startDecrypt } = require("./src/encypt_img");
 
-startEncypt();
-// startDecypt();
+startEncrypt();
+startDecrypt();

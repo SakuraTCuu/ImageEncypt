@@ -1,59 +1,88 @@
-const CryptoJS = require("crypto-js");
 const Config = require("../config.js");
-
-let key = CryptoJS.enc.Utf8.parse(Config.key);
-let iv = CryptoJS.enc.Utf8.parse(Config.iv);
 
 function printInfo() {
     let info = "";
     info += "=========================info==============================\n";
     info += "key              " + Config.key + "\n";
-    info += "Base64(key)      " + CryptoJS.enc.Base64.stringify(key) + "\n";
+    info += "keyBuffer        " + getKeyBuffer() + "\n";
     info += "iv               " + Config.iv + "\n";
-    info += "Base64(iv)       " + CryptoJS.enc.Base64.stringify(iv) + "\n";
-    info += "prefix           " + Config.prefix + "\n";
-    info += "Base64(prefix)   " + CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(Config.prefix)) + "\n";
+    info += "prefix           " + Config.encypt_prefix + "\n";
     info += "imgPath          " + Config.imgPath + "\n";
     info += "outPath          " + Config.outPath + "\n";
     info += "=========================info==============================";
-
     console.log(info);
 }
 
 /**
- * 
- * @param {*} originStr  源数据
+ * 获取keyBuffer
+ * @returns 
  */
-function encyptData(originStr) {
-
-    let encrypt = CryptoJS.AES.encrypt(originStr, key, {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7,
-        iv: iv
-    });
-
-    let encyptStr = encrypt.toString();
-    return encyptStr;
+function getKeyBuffer() {
+    let keyBuff = Buffer.from(Config.key);
+    return keyBuff;
 }
 
 /**
  * 
- * @param {*} encyptStr 加密过的数据
+ * @param {Buffer}  originBuffer  源数据
  */
-function decyptData(encyptStr) {
+function encryptBuffer(originBuffer) {
+    let keyBuff = getKeyBuffer();
+    //加点东西 直接拼接
+    let buffer = Buffer.concat([keyBuff, originBuffer]);
+    buffer = buffer.reverse();
+    return buffer;
 
-    let decrypt = CryptoJS.AES.decrypt(encyptStr, key, {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7,
-        iv: iv
-    });
+    // console.log(originBuffer.byteLength);
 
-    let originStr = decrypt.toString(CryptoJS.enc.Utf8);
-    return originStr;
+    // let tempBuffer = Buffer.alloc(0);
+    // let sBuffer = Buffer.alloc(1).fill(1);
+    // for (let i = 0; i < originBuffer.byteLength; i += 128) {
+    //     let end = i + 128;
+    //     if (end >= originBuffer.byteLength) {
+    //         end = originBuffer.byteLength;
+    //     }
+    //     tempBuffer = Buffer.concat([tempBuffer, sBuffer, originBuffer.subarray(i, end)]);
+    // }
+    // console.log(tempBuffer.byteLength);
+    // tempBuffer = tempBuffer.reverse();
+
+    // return tempBuffer;
+}
+
+/**
+ * 
+ * @param {Buffer} encyptBuffer 加密过的数据
+ */
+function decryptBuffer(encyptBuffer) {
+    let keyBuff = getKeyBuffer();
+    let byteLen = keyBuff.byteLength;
+
+    let buffer = encyptBuffer.reverse();
+    buffer = buffer.subarray(byteLen);
+
+    return buffer;
+
+
+    // console.log(encyptBuffer.byteLength);
+
+    // encyptBuffer = encyptBuffer.reverse();
+
+    // let tempBuffer = Buffer.alloc(0);
+    // for (let i = 0; i < encyptBuffer.byteLength; i += 129) {
+    //     let end = i + 129;
+    //     if (end >= encyptBuffer.byteLength) {
+    //         end = encyptBuffer.byteLength;
+    //     }
+    //     tempBuffer = Buffer.concat([tempBuffer, encyptBuffer.subarray(i + 1, end)]);
+    // }
+    // console.log(tempBuffer.byteLength);
+
+    // return tempBuffer;
 }
 
 module.exports = {
-    encyptData,
-    decyptData,
+    encryptBuffer,
+    decryptBuffer,
     printInfo
 }
