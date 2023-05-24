@@ -7,6 +7,7 @@ const Config = {
 
     suffix: ".png", //加密文件的后缀名
     imgPath: path.join(__dirname, "assets/img"), //源图片路径
+    compressPath: path.join(__dirname, "assets/compress"), //压缩后图片路径
     outPath: path.join(__dirname, "assets/out"), //加密后的图片路径
     decPath: path.join(__dirname, "assets/dec"), //解密后的图片路径
 

@@ -1,0 +1,18 @@
+node_modules/   
+node_modules/*
+dist/            # 打包构建出的dist文件
+test/
+mock/       
+.Ds_store        # Mac电脑生成的元数据文件
+ 
+# npm/yarn 日志
+npm-debug.log
+npm-error.log
+yarn-error.log
+yarn-debug.log
+ 
+package-lock.json    # 我们用yarn.lock，故忽略
+ 
+# ide生成的配置
+idea/
+stylelintcache       # cache文件

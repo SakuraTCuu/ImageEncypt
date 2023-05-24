@@ -5,6 +5,8 @@ const { encryptBuffer,
     decryptBuffer,
     printInfo } = require("./encypt_data.js");
 
+const { compress } = require("./compress_img.js");
+
 /**
  * 读指定目录下的后缀名文件
  * @param {*} folder 
@@ -53,23 +55,43 @@ function createFolder(rootPath, relativePath) {
     fs.mkdirSync(outFolder, { recursive: true });
 }
 
+
 /**
- * 程序入口, 开始加密
+ * 开始压缩
  */
-function startEncrypt() {
-    printInfo();
-    console.log("---------------------加密开始---------------------");
-    console.time("加密耗时: ");
+async function startCompress() {
+    console.log("---------------------压缩开始---------------------");
+    console.time("压缩耗时");
     let arrFiles = loadFileNameByPath4Ext(Config.imgPath, [Config.suffix]);
 
     for (let i = 0; i < arrFiles.length; i++) {
         let relativePath = Path.relative(Config.imgPath, arrFiles[i]);
         //创建输出目录
+        createFolder(Config.compressPath, relativePath);
+        //加密图片
+        await compress(relativePath);
+    }
+    console.timeEnd("压缩耗时");
+    console.log("---------------------压缩结束---------------------");
+}
+
+/**
+ * 开始加密
+ */
+function startEncrypt() {
+    printInfo();
+    console.log("---------------------加密开始---------------------");
+    console.time("加密耗时");
+    let arrFiles = loadFileNameByPath4Ext(Config.compressPath, [Config.suffix]);
+
+    for (let i = 0; i < arrFiles.length; i++) {
+        let relativePath = Path.relative(Config.compressPath, arrFiles[i]);
+        //创建输出目录
         createFolder(Config.outPath, relativePath);
         //加密图片
         encryptImg(relativePath);
     }
-    console.timeEnd("加密耗时: ");
+    console.timeEnd("加密耗时");
     console.log("---------------------加密结束---------------------");
 }
 
@@ -77,6 +99,8 @@ function startEncrypt() {
  * 解密
  */
 function startDecrypt() {
+    console.log("---------------------解密开始---------------------");
+    console.time("解密耗时");
     let arrFiles = loadFileNameByPath4Ext(Config.outPath, [Config.suffix]);
 
     for (let i = 0; i < arrFiles.length; i++) {
@@ -86,6 +110,8 @@ function startDecrypt() {
         //解密图片
         decryptImg(relativePath);
     }
+    console.timeEnd("解密耗时");
+    console.log("---------------------解密结束---------------------");
 }
 
 /**
@@ -94,7 +120,7 @@ function startDecrypt() {
  * @param {*} callback 
  */
 function encryptImg(imgName) {
-    let imgPath = Path.join(Config.imgPath, imgName);
+    let imgPath = Path.join(Config.compressPath, imgName);
     let outPath = Path.join(Config.outPath, imgName);
 
     console.log(`开始加密 ${imgPath}`);
@@ -128,6 +154,7 @@ function decryptImg(imgName) {
 module.exports = {
     startDecrypt,
     startEncrypt,
+    startCompress,
     encryptImg,
     decryptImg
 }

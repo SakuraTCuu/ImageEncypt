@@ -1,5 +1,10 @@
 
-const { startEncrypt, startDecrypt } = require("./src/encypt_img");
+const { startEncrypt, startDecrypt, startCompress } = require("./src/encypt_img");
 
-startEncrypt();
-startDecrypt();
+async function main() {
+    await startCompress();
+    startEncrypt();
+    startDecrypt();
+}
+
+main();
